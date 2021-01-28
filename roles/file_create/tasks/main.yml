@@ -1,0 +1,11 @@
+---
+# tasks file for file_create
+- name: Run file_create module
+  dallen.utils.file_create:
+    path: "/tmp/test.txt"
+    content: "This file was created by file_create module from dallen.utils Ansible collection\n"
+    new: true
+  register: testout
+- name: Dump test output
+  debug:
+    msg: "{{ testout }}"
