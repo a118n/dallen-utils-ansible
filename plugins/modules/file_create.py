@@ -5,6 +5,7 @@
 from __future__ import (absolute_import, division, print_function)
 from sys import path
 from ansible.module_utils.basic import AnsibleModule
+from os import path
 __metaclass__ = type
 
 DOCUMENTATION = r'''
@@ -67,8 +68,7 @@ def run_module():
     # define available arguments/parameters a user can pass to the module
     module_args = dict(
         path=dict(type='str', required=True),
-        content=dict(type='str', required=True),
-        new=dict(type='bool', required=False, default=False)
+        content=dict(type='str', required=True)
     )
 
     # seed the result dict in the object
@@ -99,17 +99,20 @@ def run_module():
 
     # manipulate or modify the state as needed (this is going to be the
     # part where your module will do what it needs to do)
-    f = open(module.params['path'], "w")
-    f.write(module.params['content'])
-    f.close()
 
-    result['path'] = module.params['path']
-    result['content'] = module.params['content']
+    if path.exists(module.params['path']):
+        with open(module.params['path'], 'r') as f:
+            file_content = f.read()
 
-    # use whatever logic you need to determine whether or not this module
-    # made any modifications to your target
-    if module.params['new']:
-        result['changed'] = True
+    if file_content == module.params['content']:
+        result['changed'] = False
+    else:
+        with open(module.params['path'], 'w') as f:
+            f.write(module.params['content'])
+            f.close()
+            result['path'] = module.params['path']
+            result['content'] = module.params['content']
+            result['changed'] = True
 
     # during the execution of the module, if there is an exception or a
     # conditional state that effectively causes a failure, run
